@@ -2,71 +2,198 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>CalorieTracker</title>
+    <title>FuelFocus Pro</title>
     <style>
-        :root { --main: #007aff; --bg: #f2f2f7; --card: #ffffff; }
-        body { font-family: -apple-system, system-ui; background: var(--bg); margin: 0; padding: 20px; }
-        .card { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        h2 { margin-top: 0; color: #333; font-size: 1.2rem; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; padding: 14px; background: var(--main); color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 16px; }
-        .entry { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
-        #total { font-size: 2rem; font-weight: 800; color: var(--main); text-align: center; }
+        :root {
+            --primary: #007AFF;
+            --success: #34C759;
+            --danger: #FF3B30;
+            --bg: #F2F2F7;
+            --card: #FFFFFF;
+            --text: #1C1C1E;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica; 
+            background: var(--bg); color: var(--text); margin: 0; padding: 0; 
+            display: flex; flex-direction: column; min-height: 100vh;
+        }
+
+        /* Onboarding Screen */
+        #onboarding { position: fixed; inset: 0; background: var(--bg); z-index: 100; padding: 40px 20px; display: none; }
+        .setup-card { background: var(--card); border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+
+        /* Main UI */
+        header { padding: 60px 20px 20px; background: var(--card); border-bottom: 1px solid #D1D1D6; }
+        .container { padding: 20px; flex: 1; }
+        .card { background: var(--card); border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+        /* Rings/Progress */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .stat-box { text-align: center; }
+        .stat-val { font-size: 24px; font-weight: 800; color: var(--primary); }
+        
+        /* Inputs */
+        input, select { 
+            width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #E5E5EA; 
+            border-radius: 12px; font-size: 16px; appearance: none;
+        }
+        button { 
+            width: 100%; padding: 16px; background: var(--primary); color: white; 
+            border: none; border-radius: 14px; font-size: 17px; font-weight: 600;
+            transition: opacity 0.2s;
+        }
+        button:active { opacity: 0.7; }
+
+        /* History List */
+        .history-item { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 12px 0; border-bottom: 1px solid #F2F2F7; 
+        }
+        .day-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
     </style>
 </head>
-<body>            
-    <div class="card">
-        <h2>Daily Total</h2>
-        <div id="total">0</div>
-        <p style="text-align: center; color: #666;">kcal consumed</p>
+<body>
+
+    <div id="onboarding">
+        <div class="setup-card">
+            <h1 style="font-size: 32px; margin-bottom: 10px;">Welcome.</h1>
+            <p style="color: #8E8E93; margin-bottom: 30px;">Let's calculate your daily fuel needs.</p>
+            
+            <label>Current Weight (kg)</label>
+            <input type="number" id="user-weight" placeholder="e.g. 80">
+            
+            <label>Goal</label>
+            <select id="user-goal">
+                <option value="-500">Lose Weight (-500 kcal)</option>
+                <option value="0">Maintain Weight</option>
+                <option value="500">Gain Muscle (+500 kcal)</option>
+            </select>
+            
+            <button onclick="finishSetup()">Start My Plan</button>
+        </div>
     </div>
 
-    <div class="card">
-        <input type="text" id="food" placeholder="What did you eat?">
-        <input type="number" id="cals" placeholder="Calories" inputmode="numeric">
-        <button onclick="saveEntry()">Add to Log</button>
-    </div>
+    <header>
+        <div class="day-nav">
+            <h1 id="current-date-display" style="margin:0; font-size: 28px;">Today</h1>
+            <span id="target-display" style="color: #8E8E93; font-weight: 600;">Target: --</span>
+        </div>
+    </header>
 
-    <div class="card" id="history-card">
-        <h2>Today's Log</h2>
-        <div id="log"></div>
-        <button onclick="resetDay()" style="background: #ff3b30; margin-top: 15px;">Reset Day</button>
+    <div class="container">
+        <div class="card">
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-val" id="total-consumed">0</div>
+                    <div style="font-size: 12px; color: #8E8E93;">CONSUMED</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-val" id="remaining-cals">0</div>
+                    <div style="font-size: 12px; color: #8E8E93;">REMAINING</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top:0">Quick Log</h3>
+            <input type="text" id="food-name" placeholder="What did you eat?">
+            <input type="number" id="food-cals" placeholder="Calories" inputmode="numeric">
+            <button onclick="logFood()">Add Entry</button>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top:0">Entries</h3>
+            <div id="log-list"></div>
+        </div>
+        
+        <button onclick="resetAll()" style="background: transparent; color: var(--danger); font-size: 14px;">Reset All Data & Profile</button>
     </div>
 
     <script>
-        let data = JSON.parse(localStorage.getItem('myCals')) || [];
+        let userProfile = JSON.parse(localStorage.getItem('ff_profile'));
+        let dailyLogs = JSON.parse(localStorage.getItem('ff_logs')) || {}; 
+        let today = new Date().toISOString().split('T')[0];
 
-        function render() {
-            const logDiv = document.getElementById('log');
-            const totalDiv = document.getElementById('total');
-            logDiv.innerHTML = '';
-            let sum = 0;
-            data.forEach(item => {
-                sum += parseInt(item.cals);
-                logDiv.innerHTML += `<div class="entry"><span>${item.food}</span><b>${item.cals}</b></div>`;
-            });
-            totalDiv.innerText = sum;
-            localStorage.setItem('myCals', JSON.stringify(data));
-        }
-
-        function saveEntry() {
-            const food = document.getElementById('food').value;
-            const cals = document.getElementById('cals').value;
-            if(food && cals) {
-                data.push({food, cals});
-                document.getElementById('food').value = '';
-                document.getElementById('cals').value = '';
-                render();
+        function checkOnboarding() {
+            if (!userProfile) {
+                document.getElementById('onboarding').style.display = 'block';
+            } else {
+                document.getElementById('onboarding').style.display = 'none';
+                renderApp();
             }
         }
 
-        function resetDay() {
-            if(confirm("Start fresh?")) { data = []; render(); }
+        function finishSetup() {
+            const weight = document.getElementById('user-weight').value;
+            const goalMod = document.getElementById('user-goal').value;
+            
+            if (weight > 0) {
+                // Simplified BMR calculation (Weight * 24 * 1.2 activity factor)
+                const baseCals = Math.round((weight * 22) * 1.3);
+                userProfile = {
+                    weight: weight,
+                    target: baseCals + parseInt(goalMod)
+                };
+                localStorage.setItem('ff_profile', JSON.stringify(userProfile));
+                checkOnboarding();
+            }
         }
-        render();
+
+        function logFood() {
+            const name = document.getElementById('food-name').value;
+            const cals = document.getElementById('food-cals').value;
+            
+            if (name && cals) {
+                if (!dailyLogs[today]) dailyLogs[today] = [];
+                dailyLogs[today].push({ name, cals: parseInt(cals), time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) });
+                
+                localStorage.setItem('ff_logs', JSON.stringify(dailyLogs));
+                document.getElementById('food-name').value = '';
+                document.getElementById('food-cals').value = '';
+                renderApp();
+            }
+        }
+
+        function renderApp() {
+            const logList = document.getElementById('log-list');
+            const totalDisp = document.getElementById('total-consumed');
+            const remainDisp = document.getElementById('remaining-cals');
+            document.getElementById('target-display').innerText = `Target: ${userProfile.target} kcal`;
+            
+            logList.innerHTML = '';
+            let total = 0;
+            
+            const entries = dailyLogs[today] || [];
+            entries.forEach(item => {
+                total += item.cals;
+                logList.innerHTML += `
+                    <div class="history-item">
+                        <div>
+                            <div style="font-weight:600">${item.name}</div>
+                            <div style="font-size:12px; color:#8E8E93">${item.time}</div>
+                        </div>
+                        <div style="font-weight:700">${item.cals} kcal</div>
+                    </div>`;
+            });
+
+            totalDisp.innerText = total;
+            const remaining = userProfile.target - total;
+            remainDisp.innerText = remaining;
+            remainDisp.style.color = remaining < 0 ? 'var(--danger)' : 'var(--success)';
+        }
+
+        function resetAll() {
+            if(confirm("Erase all data?")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        checkOnboarding();
     </script>
 </body>
 </html>
