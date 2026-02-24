@@ -136,7 +136,7 @@
             
             if(!w || !tw) return alert("Please fill in weights");
 
-            const bmr = (10 * w) + 600; // Simplified BMR
+            const bmr = (23 * w) * 1.3;
             let targetCals = tw < w ? bmr - speed : bmr + speed;
             
             profile = {
