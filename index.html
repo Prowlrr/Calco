@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>CalorieTrack</title>
+    <style>
+        :root { --main: #007aff; --bg: #f2f2f7; --card: #ffffff; }
+        body { font-family: -apple-system, system-ui; background: var(--bg); margin: 0; padding: 20px; }
+        .card { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        h2 { margin-top: 0; color: #333; font-size: 1.2rem; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 14px; background: var(--main); color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 16px; }
+        .entry { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+        #total { font-size: 2rem; font-weight: 800; color: var(--main); text-align: center; }
+    </style>
+</head>
+<body>            
+    <div class="card">
+        <h2>Daily Total</h2>
+        <div id="total">0</div>
+        <p style="text-align: center; color: #666;">kcal consumed</p>
+    </div>
+
+    <div class="card">
+        <input type="text" id="food" placeholder="What did you eat?">
+        <input type="number" id="cals" placeholder="Calories" inputmode="numeric">
+        <button onclick="saveEntry()">Add to Log</button>
+    </div>
+
+    <div class="card" id="history-card">
+        <h2>Today's Log</h2>
+        <div id="log"></div>
+        <button onclick="resetDay()" style="background: #ff3b30; margin-top: 15px;">Reset Day</button>
+    </div>
+
+    <script>
+        let data = JSON.parse(localStorage.getItem('myCals')) || [];
+
+        function render() {
+            const logDiv = document.getElementById('log');
+            const totalDiv = document.getElementById('total');
+            logDiv.innerHTML = '';
+            let sum = 0;
+            data.forEach(item => {
+                sum += parseInt(item.cals);
+                logDiv.innerHTML += `<div class="entry"><span>${item.food}</span><b>${item.cals}</b></div>`;
+            });
+            totalDiv.innerText = sum;
+            localStorage.setItem('myCals', JSON.stringify(data));
+        }
+
+        function saveEntry() {
+            const food = document.getElementById('food').value;
+            const cals = document.getElementById('cals').value;
+            if(food && cals) {
+                data.push({food, cals});
+                document.getElementById('food').value = '';
+                document.getElementById('cals').value = '';
+                render();
+            }
+        }
+
+        function resetDay() {
+            if(confirm("Start fresh?")) { data = []; render(); }
+        }
+        render();
+    </script>
+</body>
+</html>
