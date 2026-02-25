@@ -5,184 +5,157 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Aura Nutrition</title>
+    <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/240/apple-health.png">
+    <title>Aura Elite</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        :root {
-            --primary: #5856D6; --accent: #AF52DE; --success: #34C759;
-            --warning: #FF9500; --danger: #FF3B30; --bg: #000000;
-            --card: #1C1C1E; --text: #FFFFFF;
-        }
-        body { 
-            font-family: -apple-system, system-ui; background: var(--bg); 
-            color: var(--text); margin: 0; padding: 0; overflow-x: hidden;
-        }
-        #onboarding { 
-            position: fixed; inset: 0; background: var(--bg); z-index: 1000; 
-            padding: 40px 25px; overflow-y: auto; display: none; 
-        }
-        .container { padding: 60px 20px 100px; }
-        .card { 
-            background: var(--card); border-radius: 24px; padding: 20px; 
-            margin-bottom: 20px; border: 1px solid #38383A;
-        }
+        :root { --primary: #5856D6; --accent: #AF52DE; --bg: #000000; --card: #1C1C1E; --text: #FFFFFF; --nav: #121212; }
+        body { font-family: -apple-system, system-ui; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
         
-        /* The Ring */
-        .ring-container { position: relative; width: 200px; height: 200px; margin: 0 auto 20px; }
-        svg { transform: rotate(-90deg); }
-        circle { fill: none; stroke-width: 12; stroke-linecap: round; transition: stroke-dashoffset 0.5s ease; }
-        .bg-ring { stroke: #38383A; }
+        /* Navigation */
+        nav { position: fixed; bottom: 0; width: 100%; background: var(--nav); display: flex; justify-content: space-around; padding: 15px 0 30px; border-top: 1px solid #38383A; z-index: 1000; }
+        .nav-item { color: #8E8E93; text-decoration: none; font-size: 12px; text-align: center; border:none; background:none; cursor:pointer; }
+        .nav-item.active { color: var(--primary); }
+
+        /* Sections */
+        .section { display: none; padding: 60px 20px 120px; }
+        .section.active { display: block; }
+
+        /* Dashboard UI */
+        .ring-container { position: relative; width: 220px; height: 220px; margin: 0 auto 25px; }
+        svg { transform: rotate(-90deg); filter: drop-shadow(0 0 5px var(--primary)); }
+        circle { fill: none; stroke-width: 14; stroke-linecap: round; transition: stroke-dashoffset 0.8s; }
+        .bg-ring { stroke: #2C2C2E; }
         .main-ring { stroke: var(--primary); }
-        .ring-text { 
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            text-align: center; 
-        }
+        .ring-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
 
-        /* Macro Bars */
-        .macro-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .macro-label { font-size: 10px; color: #8E8E93; text-transform: uppercase; margin-bottom: 4px; }
-        .progress-bar { height: 6px; background: #38383A; border-radius: 3px; overflow: hidden; }
-        .progress-fill { height: 100%; transition: width 0.3s; }
+        /* History List */
+        .history-card { background: var(--card); border-radius: 18px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #38383A; }
+        .success-badge { background: var(--primary); color: white; padding: 4px 8px; border-radius: 8px; font-size: 10px; font-weight: bold; }
 
-        /* Inputs */
-        input, select { 
-            width: 100%; padding: 16px; background: #2C2C2E; border: none; 
-            border-radius: 14px; color: white; margin: 10px 0; font-size: 16px; 
-        }
-        .slider-label { display: flex; justify-content: space-between; margin-top: 15px; font-size: 14px; }
-        input[type="range"] { height: 30px; accent-color: var(--primary); }
-        button { 
-            width: 100%; padding: 18px; background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 17px; margin-top: 20px;
-        }
+        /* Common Styles */
+        .card { background: var(--card); border-radius: 24px; padding: 20px; margin-bottom: 20px; border: 1px solid #38383A; }
+        #reader { width: 100%; border-radius: 16px; overflow: hidden; display: none; margin-bottom: 15px; }
+        input { width: 100%; padding: 15px; background: #2C2C2E; border: 1px solid #38383A; border-radius: 12px; color: white; margin: 8px 0; font-size: 16px; box-sizing: border-box; }
+        button { width: 100%; padding: 18px; background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 17px; }
+        #onboarding { position: fixed; inset: 0; background: var(--bg); z-index: 2000; padding: 40px 25px; display: none; }
     </style>
 </head>
 <body>
 
     <div id="onboarding">
-        <h1>Set Your Goal</h1>
-        <label>Current Weight (kg)</label>
-        <input type="number" id="curr-w" placeholder="80">
-        <label>Target Weight (kg)</label>
-        <input type="number" id="target-w" placeholder="75">
-        
-        <div class="slider-label">
-            <span>Aggressiveness (Speed)</span>
-            <span id="speed-val">Steady</span>
-        </div>
-        <input type="range" id="speed" min="250" max="1000" step="250" value="500" 
-               oninput="document.getElementById('speed-val').innerText = this.value == 1000 ? 'Aggressive' : (this.value == 250 ? 'Steady' : 'Moderate')">
-        
-        <button onclick="saveProfile()">Create Personal Plan</button>
+        <h1 style="font-size: 42px;">Aura.</h1>
+        <p style="color: #8E8E93;">Let's set your 3,400 kcal bulk.</p>
+        <input type="number" id="curr-w" placeholder="Current Weight (kg)">
+        <button onclick="saveProfile()">Start Bulking</button>
     </div>
 
-    <div class="container">
+    <div id="dashboard" class="section active">
         <div class="ring-container">
-            <svg width="200" height="200">
-                <circle class="bg-ring" cx="100" cy="100" r="85"></circle>
-                <circle class="main-ring" id="ring-fill" cx="100" cy="100" r="85" stroke-dasharray="534" stroke-dashoffset="534"></circle>
+            <svg width="220" height="220">
+                <circle class="bg-ring" cx="110" cy="110" r="95"></circle>
+                <circle class="main-ring" id="ring-fill" cx="110" cy="110" r="95" stroke-dasharray="597" stroke-dashoffset="597"></circle>
             </svg>
             <div class="ring-text">
-                <div style="font-size: 32px; font-weight: 800;" id="cals-left">0</div>
-                <div style="font-size: 12px; color: #8E8E93;">KCAL LEFT</div>
+                <div style="font-size: 40px; font-weight: 800;" id="cals-left">0</div>
+                <div style="font-size: 10px; color: #8E8E93; letter-spacing: 2px;">KCAL REMAINING</div>
             </div>
         </div>
 
         <div class="card">
-            <div class="macro-grid">
-                <div>
-                    <div class="macro-label">Protein</div>
-                    <div class="progress-bar"><div id="p-bar" class="progress-fill" style="background:var(--danger)"></div></div>
-                    <div style="font-size: 12px; margin-top:4px"><span id="p-cur">0</span>/<span id="p-max">0</span>g</div>
-                </div>
-                <div>
-                    <div class="macro-label">Carbs</div>
-                    <div class="progress-bar"><div id="c-bar" class="progress-fill" style="background:var(--success)"></div></div>
-                    <div style="font-size: 12px; margin-top:4px"><span id="c-cur">0</span>/<span id="c-max">0</span>g</div>
-                </div>
-                <div>
-                    <div class="macro-label">Fat</div>
-                    <div class="progress-bar"><div id="f-bar" class="progress-fill" style="background:var(--warning)"></div></div>
-                    <div style="font-size: 12px; margin-top:4px"><span id="f-cur">0</span>/<span id="f-max">0</span>g</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <h3 style="margin:0 0 15px 0">Log Nutrition</h3>
+            <button onclick="startScanner()" style="background:#2C2C2E; color:var(--primary); border:1px solid var(--primary); margin-bottom:10px;">📷 Scan Barcode</button>
+            <div id="reader"></div>
             <input type="text" id="food-n" placeholder="Meal Name">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
-                <input type="number" id="f-kcal" placeholder="Cals" inputmode="numeric">
-                <input type="number" id="f-p" placeholder="Prot (g)" inputmode="numeric">
-            </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
-                <input type="number" id="f-c" placeholder="Carb (g)" inputmode="numeric">
-                <input type="number" id="f-f" placeholder="Fat (g)" inputmode="numeric">
-            </div>
-            <button onclick="addEntry()">Add Meal</button>
+            <input type="number" id="f-kcal" placeholder="Calories" inputmode="numeric">
+            <button onclick="addEntry()">Log Meal</button>
         </div>
-        
-        <button onclick="localStorage.clear(); location.reload();" style="background:none; color:grey; font-size:12px">Reset All Data</button>
     </div>
+
+    <div id="history" class="section">
+        <h2 style="margin-bottom: 25px;">Progress History</h2>
+        <div id="history-list"></div>
+    </div>
+
+    <nav>
+        <button class="nav-item active" onclick="showTab('dashboard', this)">Dashboard</button>
+        <button class="nav-item" onclick="showTab('history', this)">History</button>
+    </nav>
 
     <script>
         let profile = JSON.parse(localStorage.getItem('aura_profile'));
         let logs = JSON.parse(localStorage.getItem('aura_logs')) || {};
         let today = new Date().toISOString().split('T')[0];
+        let html5QrCode;
+
+        function showTab(tabId, el) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            el.classList.add('active');
+            if(tabId === 'history') renderHistory();
+        }
 
         function saveProfile() {
-            const w = parseFloat(document.getElementById('curr-w').value);
-            const tw = parseFloat(document.getElementById('target-w').value);
-            const speed = parseInt(document.getElementById('speed').value);
-            
-            if(!w || !tw) return alert("Please fill in weights");
-
-            const bmr = (23 * w) * 1.3;
-            let targetCals = tw < w ? bmr - speed : bmr + speed;
-            
-            profile = {
-                targetCals,
-                p: Math.round(w * 2), // 2g protein per kg
-                f: Math.round((targetCals * 0.25) / 9), // 25% fats
-                c: Math.round((targetCals - (w*2*4) - (targetCals*0.25)) / 4)
-            };
+            const w = document.getElementById('curr-w').value;
+            if(!w) return;
+            profile = { targetCals: 3400, weight: w };
             localStorage.setItem('aura_profile', JSON.stringify(profile));
             location.reload();
         }
 
+        function startScanner() {
+            document.getElementById('reader').style.display = 'block';
+            html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
+                fetch(`https://world.openfoodfacts.org/api/v0/product/${text}.json`)
+                .then(r => r.json()).then(data => {
+                    if(data.status === 1) {
+                        document.getElementById('food-n').value = data.product.product_name;
+                        document.getElementById('f-kcal').value = Math.round(data.product.nutriments['energy-kcal_100g']);
+                    }
+                    html5QrCode.stop();
+                    document.getElementById('reader').style.display = 'none';
+                });
+            });
+        }
+
         function addEntry() {
-            const entry = {
-                k: parseInt(document.getElementById('f-kcal').value || 0),
-                p: parseInt(document.getElementById('f-p').value || 0),
-                c: parseInt(document.getElementById('f-c').value || 0),
-                f: parseInt(document.getElementById('f-f').value || 0)
-            };
+            const k = parseInt(document.getElementById('f-kcal').value);
+            if(!k) return;
             if(!logs[today]) logs[today] = [];
-            logs[today].push(entry);
+            logs[today].push({ k });
             localStorage.setItem('aura_logs', JSON.stringify(logs));
             updateUI();
+            document.getElementById('f-kcal').value = '';
+            document.getElementById('food-n').value = '';
         }
 
         function updateUI() {
             if(!profile) { document.getElementById('onboarding').style.display='block'; return; }
-            
-            let totals = {k:0, p:0, c:0, f:0};
-            (logs[today] || []).forEach(l => { totals.k += l.k; totals.p += l.p; totals.c += l.c; totals.f += l.f; });
-
-            // Update Ring
+            let total = (logs[today] || []).reduce((a, b) => a + b.k, 0);
             const ring = document.getElementById('ring-fill');
-            const percent = Math.min(totals.k / profile.targetCals, 1);
-            ring.style.strokeDashoffset = 534 - (534 * percent);
-            document.getElementById('cals-left').innerText = Math.max(0, profile.targetCals - totals.k);
+            const percent = Math.min(total / profile.targetCals, 1);
+            ring.style.strokeDashoffset = 597 - (597 * percent);
+            document.getElementById('cals-left').innerText = Math.max(0, profile.targetCals - total);
+        }
 
-            // Update Macros
-            const updateMacro = (id, cur, max) => {
-                document.getElementById(id+'-cur').innerText = cur;
-                document.getElementById(id+'-max').innerText = max;
-                document.getElementById(id+'-bar').style.width = Math.min((cur/max)*100, 100) + '%';
-            };
-            updateMacro('p', totals.p, profile.p);
-            updateMacro('c', totals.c, profile.c);
-            updateMacro('f', totals.f, profile.f);
+        function renderHistory() {
+            const list = document.getElementById('history-list');
+            list.innerHTML = '';
+            const sortedDates = Object.keys(logs).sort().reverse();
+            
+            sortedDates.forEach(date => {
+                const total = logs[date].reduce((a, b) => a + b.k, 0);
+                const isGoalMet = total >= profile.targetCals;
+                list.innerHTML += `
+                    <div class="history-card">
+                        <div>
+                            <div style="font-size: 14px; font-weight: 600;">${date === today ? 'Today' : date}</div>
+                            <div style="font-size: 18px; font-weight: 800; color:var(--primary)">${total} kcal</div>
+                        </div>
+                        ${isGoalMet ? '<span class="success-badge">GOAL HIT</span>' : ''}
+                    </div>`;
+            });
         }
 
         updateUI();
