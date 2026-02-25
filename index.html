@@ -8,69 +8,66 @@
     <title>Aura Elite</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        :root {
-            --primary: #5856D6; --accent: #AF52DE; --bg: #000000;
-            --card: #1C1C1E; --text: #FFFFFF;
-        }
+        :root { --primary: #5856D6; --accent: #AF52DE; --bg: #000000; --card: #1C1C1E; --text: #FFFFFF; }
         body { font-family: -apple-system, system-ui; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
         #onboarding { position: fixed; inset: 0; background: var(--bg); z-index: 1000; padding: 40px 25px; display: none; }
         .container { padding: 60px 20px 100px; }
-        .card { background: var(--card); border-radius: 24px; padding: 20px; margin-bottom: 20px; border: 1px solid #38383A; }
         
-        /* Ring */
-        .ring-container { position: relative; width: 200px; height: 200px; margin: 0 auto 20px; }
+        /* Progress Ring */
+        .ring-container { position: relative; width: 220px; height: 220px; margin: 0 auto 20px; }
         svg { transform: rotate(-90deg); }
-        circle { fill: none; stroke-width: 12; stroke-linecap: round; transition: stroke-dashoffset 0.5s ease; }
-        .bg-ring { stroke: #38383A; }
+        circle { fill: none; stroke-width: 14; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
+        .bg-ring { stroke: #2C2C2E; }
         .main-ring { stroke: var(--primary); }
         .ring-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
 
-        /* Scanner */
-        #reader { width: 100%; border-radius: 12px; overflow: hidden; display: none; border: 2px solid var(--primary); background: #000; }
-        
+        /* Interface */
+        .card { background: var(--card); border-radius: 24px; padding: 20px; margin-bottom: 20px; border: 1px solid #38383A; }
         input { width: 100%; padding: 16px; background: #2C2C2E; border: none; border-radius: 14px; color: white; margin: 10px 0; font-size: 16px; box-sizing: border-box; }
         button { width: 100%; padding: 18px; background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 17px; margin-top: 10px; }
         
-        .macro-info { display: flex; justify-content: space-around; font-size: 12px; color: #8E8E93; margin-top: 10px; }
+        #reader { width: 100%; border-radius: 14px; overflow: hidden; display: none; margin-bottom: 15px; border: 1px solid var(--primary); }
+        .status-pill { font-size: 11px; text-align: center; color: var(--primary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
 
     <div id="onboarding">
-        <h1>Welcome.</h1>
+        <h1 style="font-size: 38px;">Aura.</h1>
         <input type="number" id="curr-w" placeholder="Weight (kg)">
-        <button onclick="saveProfile()">Set 3,400 kcal Goal</button>
+        <button onclick="saveProfile()">Start 3,400 kcal Plan</button>
     </div>
 
     <div class="container">
         <div class="ring-container">
-            <svg width="200" height="200">
-                <circle class="bg-ring" cx="100" cy="100" r="85"></circle>
-                <circle id="ring-fill" class="main-ring" cx="100" cy="100" r="85" stroke-dasharray="534" stroke-dashoffset="534"></circle>
+            <svg width="220" height="220">
+                <circle class="bg-ring" cx="110" cy="110" r="95"></circle>
+                <circle id="ring-fill" class="main-ring" cx="110" cy="110" r="95" stroke-dasharray="597" stroke-dashoffset="597"></circle>
             </svg>
             <div class="ring-text">
-                <div style="font-size: 32px; font-weight: 800;" id="cals-left">0</div>
-                <div style="font-size: 10px; color: #8E8E93;">KCAL REMAINING</div>
+                <div style="font-size: 38px; font-weight: 800;" id="cals-left">0</div>
+                <div style="font-size: 10px; color: #8E8E93; letter-spacing: 2px;">KCAL LEFT</div>
             </div>
         </div>
 
         <div class="card">
+            <div id="status" class="status-pill">Ready to Log</div>
             <div id="reader"></div>
-            <p id="scan-status" style="text-align:center; font-size:12px; color:var(--primary)"></p>
             
-            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                <input type="text" id="food-n" placeholder="Meal Name" style="flex: 1; margin: 0;">
-                <button onclick="startScanner()" style="width: 60px; margin: 0; background: #2C2C2E; border: 1px solid var(--primary);">📷</button>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="lookup-val" placeholder="Barcode or Food Name" style="flex: 1; margin: 0;">
+                <button onclick="smartSearch()" style="width: 60px; margin: 0; background: #2C2C2E; border: 1px solid var(--primary); font-size: 14px;">🔍</button>
+                <button onclick="startCamera()" style="width: 60px; margin: 0; background: #2C2C2E; border: 1px solid var(--primary); font-size: 14px;">📷</button>
             </div>
-            
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
-                <input type="number" id="f-kcal" placeholder="Calories">
-                <input type="number" id="f-p" placeholder="Protein (g)">
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top: 10px;">
+                <input type="number" id="f-kcal" placeholder="Cals" style="margin:0">
+                <input type="number" id="f-p" placeholder="Prot (g)" style="margin:0">
             </div>
-            <button onclick="addEntry()">Add to Daily Intake</button>
+            <button onclick="addEntry()">Add to Intake</button>
         </div>
         
-        <button onclick="localStorage.clear(); location.reload();" style="background:none; color:grey; font-size:10px">Reset Profile</button>
+        <button onclick="localStorage.clear(); location.reload();" style="background:none; color:grey; font-size:10px; width:100%; border:none;">Reset Data</button>
     </div>
 
     <script>
@@ -81,47 +78,48 @@
 
         function saveProfile() {
             const w = parseFloat(document.getElementById('curr-w').value) || 57;
-            profile = { targetCals: 3400, p: Math.round(w * 2.2) };
+            profile = { targetCals: 3400, weight: w };
             localStorage.setItem('aura_profile', JSON.stringify(profile));
             location.reload();
         }
 
-        async function startScanner() {
-            const r = document.getElementById('reader');
-            r.style.display = 'block';
-            document.getElementById('scan-status').innerText = "Hold 6 inches away & keep steady...";
+        // --- THE "SMART SEARCH" FALLBACK ---
+        async function smartSearch() {
+            const query = document.getElementById('lookup-val').value;
+            if(!query) return;
+            document.getElementById('status').innerText = "Searching...";
+            
+            try {
+                // If it's a number, search by barcode. If text, search by name.
+                const url = isNaN(query) 
+                    ? `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${query}&json=1&page_size=1`
+                    : `https://world.openfoodfacts.org/api/v0/product/${query}.json`;
+                
+                const res = await fetch(url);
+                const data = await res.json();
+                const product = data.product || (data.products && data.products[0]);
 
-            if (!scanner) {
-                scanner = new Html5Qrcode("reader");
-            }
-
-            const config = { 
-                fps: 20, 
-                qrbox: { width: 280, height: 120 }, // Rectangle shape for barcodes
-                aspectRatio: 1.0 
-            };
-
-            // Use 'environment' for back camera
-            scanner.start({ facingMode: "environment" }, config, (text) => {
-                document.getElementById('scan-status').innerText = "Code Detected!";
-                fetchProduct(text);
-                scanner.stop();
-                r.style.display = 'none';
-            }).catch(err => {
-                document.getElementById('scan-status').innerText = "Camera Error: Check HTTPS/Permissions";
-            });
+                if(product) {
+                    document.getElementById('lookup-val').value = product.product_name || "Unknown";
+                    document.getElementById('f-kcal').value = Math.round(product.nutriments['energy-kcal_100g'] || 0);
+                    document.getElementById('f-p').value = Math.round(product.nutriments.proteins_100g || 0);
+                    document.getElementById('status').innerText = "Product Found!";
+                } else {
+                    document.getElementById('status').innerText = "Not Found. Manual Input?";
+                }
+            } catch (e) { document.getElementById('status').innerText = "Search Error"; }
         }
 
-        async function fetchProduct(code) {
-            try {
-                const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json`);
-                const data = await res.json();
-                if(data.status === 1) {
-                    document.getElementById('food-n').value = data.product.product_name || "Unknown";
-                    document.getElementById('f-kcal').value = Math.round(data.product.nutriments['energy-kcal_100g'] || 0);
-                    document.getElementById('f-p').value = Math.round(data.product.nutriments.proteins_100g || 0);
-                }
-            } catch (e) { alert("API Error"); }
+        function startCamera() {
+            const r = document.getElementById('reader');
+            r.style.display = 'block';
+            if (!scanner) scanner = new Html5Qrcode("reader");
+            scanner.start({ facingMode: "environment" }, { fps: 20, qrbox: { width: 250, height: 120 } }, (text) => {
+                document.getElementById('lookup-val').value = text;
+                smartSearch();
+                scanner.stop();
+                r.style.display = 'none';
+            });
         }
 
         function addEntry() {
@@ -130,14 +128,16 @@
             logs[today].push({ k });
             localStorage.setItem('aura_logs', JSON.stringify(logs));
             updateUI();
+            document.getElementById('f-kcal').value = '';
+            document.getElementById('lookup-val').value = '';
         }
 
         function updateUI() {
             if(!profile) { document.getElementById('onboarding').style.display='block'; return; }
-            let total = (logs[today] || []).reduce((sum, item) => sum + item.k, 0);
+            let total = (logs[today] || []).reduce((s, i) => s + i.k, 0);
             const ring = document.getElementById('ring-fill');
             const percent = Math.min(total / profile.targetCals, 1);
-            ring.style.strokeDashoffset = 534 - (534 * percent);
+            ring.style.strokeDashoffset = 597 - (597 * percent);
             document.getElementById('cals-left').innerText = Math.max(0, profile.targetCals - total);
         }
         updateUI();
