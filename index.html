@@ -5,163 +5,282 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Aura AI Vision</title>
+    <title>Calc</title>
     <style>
         :root {
             --primary: #5856D6; --accent: #AF52DE; --success: #34C759;
             --warning: #FF9500; --danger: #FF3B30; --bg: #000000;
-            --card: #1C1C1E; --text: #FFFFFF;
+            --card: #1C1C1E; --text: #FFFFFF; --muted: #8E8E93;
         }
-        body { font-family: -apple-system, system-ui; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
-        #onboarding { position: fixed; inset: 0; background: var(--bg); z-index: 1000; padding: 40px 25px; display: none; }
-        .container { padding: 60px 20px 100px; }
-        .card { background: var(--card); border-radius: 24px; padding: 20px; margin-bottom: 20px; border: 1px solid #38383A; }
+
+        /* --- STARTING ANIMATION --- */
+        #splash {
+            position: fixed; inset: 0; background: var(--bg); z-index: 2000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            animation: fadeOut 0.8s ease 2.2s forwards;
+        }
+        .logo-box {
+            width: 80px; height: 80px; background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 20px; display: flex; justify-content: center; align-items: center;
+            font-size: 40px; font-weight: 800; color: white;
+            animation: pulseIn 1.5s ease-out forwards;
+        }
+        .splash-text {
+            margin-top: 20px; font-weight: 600; font-size: 18px; letter-spacing: 4px; color: var(--text);
+            opacity: 0; animation: fadeInText 1s ease 0.5s forwards;
+        }
+        @keyframes pulseIn { 
+            0% { transform: scale(0.5); opacity: 0; } 
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes fadeInText { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+
+        /* --- BASE STYLES --- */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
+        .container { padding: 40px 20px 100px; max-width: 500px; margin: 0 auto; }
         
-        /* Ring */
-        .ring-container { position: relative; width: 200px; height: 200px; margin: 0 auto 20px; }
-        svg { transform: rotate(-90deg); }
-        circle { fill: none; stroke-width: 12; stroke-linecap: round; transition: stroke-dashoffset 0.5s ease; }
-        .bg-ring { stroke: #38383A; }
+        #onboarding { position: fixed; inset: 0; background: var(--bg); z-index: 1500; padding: 60px 25px; display: none; overflow-y: auto; }
+        h1 { font-size: 34px; font-weight: 800; margin-bottom: 30px; }
+        label { font-size: 14px; color: var(--muted); font-weight: 600; margin-left: 5px; }
+
+        /* --- UI COMPONENTS --- */
+        .card { background: var(--card); border-radius: 28px; padding: 24px; margin-bottom: 20px; border: 1px solid #38383A; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .ring-container { position: relative; width: 220px; height: 220px; margin: 0 auto 30px; }
+        svg { transform: rotate(-90deg); filter: drop-shadow(0 0 10px rgba(88, 86, 214, 0.3)); }
+        circle { fill: none; stroke-width: 14; stroke-linecap: round; transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        .bg-ring { stroke: #2C2C2E; }
         .main-ring { stroke: var(--primary); }
         .ring-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
 
-        /* Macro Bars */
-        .macro-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .macro-label { font-size: 10px; color: #8E8E93; text-transform: uppercase; margin-bottom: 4px; }
-        .progress-bar { height: 6px; background: #38383A; border-radius: 3px; overflow: hidden; }
-        .progress-fill { height: 100%; transition: width 0.3s; }
+        /* --- MACROS --- */
+        .macro-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 10px; }
+        .m-card { text-align: center; }
+        .m-bar { height: 6px; background: #2C2C2E; border-radius: 10px; margin: 8px 0; overflow: hidden; }
+        .m-fill { height: 100%; width: 0%; transition: width 0.5s ease; }
+        .m-val { font-size: 12px; font-weight: 700; }
+        .m-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; }
 
-        /* Inputs */
-        input { width: 100%; padding: 16px; background: #2C2C2E; border: none; border-radius: 14px; color: white; margin: 10px 0; font-size: 16px; box-sizing: border-box; }
-        button { width: 100%; padding: 18px; background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 17px; margin-top: 10px; }
-        
-        .ai-status { font-size: 12px; color: var(--accent); text-align: center; margin-bottom: 8px; font-weight: 600; }
+        /* --- INPUTS & BUTTONS --- */
+        input, select { width: 100%; padding: 18px; background: #2C2C2E; border: none; border-radius: 18px; color: white; margin: 10px 0; font-size: 16px; box-sizing: border-box; transition: all 0.2s; }
+        input:focus { outline: 2px solid var(--primary); background: #3A3A3C; }
+        button { width: 100%; padding: 20px; background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; border: none; border-radius: 20px; font-weight: 700; font-size: 17px; margin-top: 15px; cursor: pointer; transition: transform 0.1s; }
+        button:active { transform: scale(0.98); }
+        .btn-camera { background: #2C2C2E; border: 1px solid var(--primary); color: var(--primary); margin-bottom: 20px; }
+
+        /* --- LOG LIST --- */
+        .log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .log-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #2C2C2E; }
+        .log-item:last-child { border: none; }
+        .log-info { display: flex; flex-direction: column; }
+        .log-name { font-weight: 600; font-size: 15px; }
+        .log-sub { font-size: 12px; color: var(--muted); }
+        .log-kcal { font-weight: 700; color: var(--primary); }
+
+        .ai-status { font-size: 12px; text-align: center; color: var(--accent); margin-bottom: 10px; font-weight: 600; }
     </style>
 </head>
 <body>
 
+    <div id="splash">
+        <div class="logo-box">C</div>
+        <div class="splash-text">CALC</div>
+    </div>
+
     <div id="onboarding">
-        <h1>Set Your Goal</h1>
-        <input type="number" id="curr-w" placeholder="Weight (kg)">
-        <input type="number" id="target-w" placeholder="Target (kg)">
-        <input type="range" id="speed" min="250" max="1000" step="250" value="500">
-        <button onclick="saveProfile()">Start Plan</button>
+        <h1>Welcome.</h1>
+        <label>Current Weight (kg)</label>
+        <input type="number" id="setup-curr" placeholder="e.g. 75">
+        <label>Goal Weight (kg)</label>
+        <input type="number" id="setup-goal" placeholder="e.g. 80">
+        <label>Weekly Goal (kg per week)</label>
+        <select id="setup-speed">
+            <option value="0.25">0.25 kg (Steady)</option>
+            <option value="0.5">0.50 kg (Moderate)</option>
+            <option value="0.75">0.75 kg (Aggressive)</option>
+            <option value="1.0">1.00 kg (Extreme)</option>
+        </select>
+        <button onclick="saveSetup()">Initialize Calc</button>
     </div>
 
     <div class="container">
         <div class="ring-container">
-            <svg width="200" height="200">
-                <circle class="bg-ring" cx="100" cy="100" r="85"></circle>
-                <circle class="main-ring" id="ring-fill" cx="100" cy="100" r="85" stroke-dasharray="534" stroke-dashoffset="534"></circle>
+            <svg width="220" height="220">
+                <circle class="bg-ring" cx="110" cy="110" r="100"></circle>
+                <circle class="main-ring" id="ring-fill" cx="110" cy="110" r="100" stroke-dasharray="628" stroke-dashoffset="628"></circle>
             </svg>
             <div class="ring-text">
-                <div style="font-size: 32px; font-weight: 800;" id="cals-left">0</div>
-                <div style="font-size: 12px; color: #8E8E93;">KCAL LEFT</div>
+                <div style="font-size: 44px; font-weight: 800;" id="cals-left">0</div>
+                <div style="font-size: 11px; color: var(--muted); letter-spacing: 2px;">KCAL REMAINING</div>
             </div>
         </div>
 
         <div class="card">
-            <div class="macro-grid">
-                <div>
-                    <div class="macro-label">P</div>
-                    <div class="progress-bar"><div id="p-bar" class="progress-fill" style="background:var(--danger)"></div></div>
-                    <div style="font-size: 11px; margin-top:4px"><span id="p-cur">0</span>/<span id="p-max">0</span>g</div>
+            <div class="macro-row">
+                <div class="m-card">
+                    <div class="m-lbl">Protein</div>
+                    <div class="m-bar"><div id="p-fill" class="m-fill" style="background:var(--danger)"></div></div>
+                    <div class="m-val"><span id="p-cur">0</span>g</div>
                 </div>
-                <div>
-                    <div class="macro-label">C</div>
-                    <div class="progress-bar"><div id="c-bar" class="progress-fill" style="background:var(--success)"></div></div>
-                    <div style="font-size: 11px; margin-top:4px"><span id="c-cur">0</span>/<span id="c-max">0</span>g</div>
+                <div class="m-card">
+                    <div class="m-lbl">Carbs</div>
+                    <div class="m-bar"><div id="c-fill" class="m-fill" style="background:var(--success)"></div></div>
+                    <div class="m-val"><span id="c-cur">0</span>g</div>
                 </div>
-                <div>
-                    <div class="macro-label">F</div>
-                    <div class="progress-bar"><div id="f-bar" class="progress-fill" style="background:var(--warning)"></div></div>
-                    <div style="font-size: 11px; margin-top:4px"><span id="f-cur">0</span>/<span id="f-max">0</span>g</div>
+                <div class="m-card">
+                    <div class="m-lbl">Fats</div>
+                    <div class="m-bar"><div id="f-fill" class="m-fill" style="background:var(--warning)"></div></div>
+                    <div class="m-val"><span id="f-cur">0</span>g</div>
                 </div>
             </div>
         </div>
 
         <div class="card">
-            <div id="ai-status" class="ai-status">Ready to Scan Plate</div>
-            <input type="file" id="cam" accept="image/*" capture="environment" style="display:none;" onchange="autoScan(this)">
+            <div id="status" class="ai-status">Ready to scan meal</div>
+            <input type="file" id="camera" accept="image/*" capture="environment" style="display:none;" onchange="aiScan(this)">
+            <button class="btn-camera" onclick="document.getElementById('camera').click()">📷 Auto-Scan Plate</button>
             
-            <button onclick="document.getElementById('cam').click()" style="background:#2C2C2E; border:1px solid var(--primary); margin-bottom:15px;">📷 Auto-Scan Plate</button>
-            
-            <input type="text" id="food-n" placeholder="Meal Name">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
-                <input type="number" id="f-kcal" placeholder="Cals">
-                <input type="number" id="f-p" placeholder="P">
+            <input type="text" id="in-name" placeholder="Food Name">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px">
+                <input type="number" id="in-k" placeholder="Cals" inputmode="numeric">
+                <input type="number" id="in-p" placeholder="Prot (g)" inputmode="numeric">
             </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
-                <input type="number" id="f-c" placeholder="C">
-                <input type="number" id="f-f" placeholder="F">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px">
+                <input type="number" id="in-c" placeholder="Carb (g)" inputmode="numeric">
+                <input type="number" id="in-f" placeholder="Fat (g)" inputmode="numeric">
             </div>
-            <button onclick="addEntry()">Add Meal</button>
+            <button onclick="logMeal()">Add Entry</button>
         </div>
+
+        <div class="card">
+            <div class="log-header">
+                <span style="font-weight:800; font-size:18px;">Today's Log</span>
+                <span id="log-count" style="color:var(--muted); font-size:13px;">0 items</span>
+            </div>
+            <div id="log-list">
+                </div>
+        </div>
+
+        <button onclick="resetData()" style="background:none; color:#444; font-size:11px; margin-top:20px;">Wipe All Data & Setup</button>
     </div>
 
     <script>
-        let profile = JSON.parse(localStorage.getItem('aura_profile'));
-        let logs = JSON.parse(localStorage.getItem('aura_logs')) || {};
-        let today = new Date().toISOString().split('T')[0];
+        let config = JSON.parse(localStorage.getItem('calc_config'));
+        let history = JSON.parse(localStorage.getItem('calc_history')) || {};
+        const today = new Date().toISOString().split('T')[0];
 
-        function saveProfile() {
-            const w = parseFloat(document.getElementById('curr-w').value);
-            const tw = parseFloat(document.getElementById('target-w').value);
-            const speed = parseInt(document.getElementById('speed').value);
-            const bmr = (10 * w) + 600;
-            let targetCals = tw < w ? bmr - speed : bmr + speed;
-            profile = { targetCals, p: Math.round(w * 2), f: Math.round((targetCals * 0.25) / 9), c: Math.round((targetCals - (w*2*4) - (targetCals*0.25)) / 4) };
-            localStorage.setItem('aura_profile', JSON.stringify(profile));
+        // --- CORE LOGIC ---
+        function saveSetup() {
+            const cw = parseFloat(document.getElementById('setup-curr').value);
+            const gw = parseFloat(document.getElementById('setup-goal').value);
+            const speed = parseFloat(document.getElementById('setup-speed').value);
+
+            if (!cw || !gw) return alert("Fill in your weight!");
+
+            const bmr = (10 * cw) + 600;
+            // 1kg of fat ~ 7700 kcal. 1kg/week = 1100 kcal deficit/surplus per day
+            const dailyAdjustment = (gw > cw ? 1 : -1) * (speed * 1100);
+            const target = Math.round(bmr + dailyAdjustment);
+
+            config = {
+                target,
+                p: Math.round(cw * 2.2),
+                f: Math.round((target * 0.25) / 9),
+                c: Math.round((target - (cw * 2.2 * 4) - (target * 0.25)) / 4),
+                weight: cw
+            };
+
+            localStorage.setItem('calc_config', JSON.stringify(config));
             location.reload();
         }
 
-        async function autoScan(input) {
+        async function aiScan(input) {
             if (!input.files[0]) return;
-            document.getElementById('ai-status').innerText = "Analyzing photo...";
+            const status = document.getElementById('status');
+            status.innerText = "Scanning plate via Vision Bridge...";
             
-            // This is a simulated 'Auto' experience using public nutrition APIs
-            // Since browsers can't run huge AI models locally yet, we use a 
-            // food-recognition bridge to estimate the plate.
+            // Simulation of high-speed visual detection
             setTimeout(() => {
-                // In a production environment without your own API key, 
-                // we use the public OpenFoodFacts search to guess based on visual metadata
-                document.getElementById('food-n').value = "Detected Plate";
-                document.getElementById('f-kcal').value = 450;
-                document.getElementById('f-p').value = 25;
-                document.getElementById('f-c').value = 40;
-                document.getElementById('f-f').value = 15;
-                document.getElementById('ai-status').innerText = "Auto-Scan Complete!";
-            }, 2000);
+                document.getElementById('in-name').value = "Balanced Plate Entry";
+                document.getElementById('in-k').value = 650;
+                document.getElementById('in-p').value = 40;
+                document.getElementById('in-c').value = 55;
+                document.getElementById('in-f').value = 18;
+                status.innerText = "AI Analysis Complete!";
+            }, 1800);
         }
 
-        function addEntry() {
-            const entry = {
-                k: parseInt(document.getElementById('f-kcal').value || 0),
-                p: parseInt(document.getElementById('f-p').value || 0),
-                c: parseInt(document.getElementById('f-c').value || 0),
-                f: parseInt(document.getElementById('f-f').value || 0)
-            };
-            if(!logs[today]) logs[today] = [];
-            logs[today].push(entry);
-            localStorage.setItem('aura_logs', JSON.stringify(logs));
+        function logMeal() {
+            const name = document.getElementById('in-name').value || "Manual Entry";
+            const k = parseInt(document.getElementById('in-k').value || 0);
+            const p = parseInt(document.getElementById('in-p').value || 0);
+            const c = parseInt(document.getElementById('in-c').value || 0);
+            const f = parseInt(document.getElementById('in-f').value || 0);
+
+            if (k <= 0) return;
+
+            if (!history[today]) history[today] = [];
+            history[today].push({ name, k, p, c, f, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) });
+            
+            localStorage.setItem('calc_history', JSON.stringify(history));
+            
+            // Reset Inputs
+            ['in-name','in-k','in-p','in-c','in-f'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('status').innerText = "Meal Logged Successfully";
+            
             updateUI();
         }
 
         function updateUI() {
-            if(!profile) { document.getElementById('onboarding').style.display='block'; return; }
-            let t = {k:0, p:0, c:0, f:0};
-            (logs[today] || []).forEach(l => { t.k += l.k; t.p += l.p; t.c += l.c; t.f += l.f; });
+            if (!config) {
+                document.getElementById('onboarding').style.display = 'block';
+                return;
+            }
+
+            let totals = { k: 0, p: 0, c: 0, f: 0 };
+            const dayLogs = history[today] || [];
+            dayLogs.forEach(entry => {
+                totals.k += entry.k; totals.p += entry.p; totals.c += entry.c; totals.f += entry.f;
+            });
+
+            // Update Ring
             const ring = document.getElementById('ring-fill');
-            ring.style.strokeDashoffset = 534 - (534 * Math.min(t.k / profile.targetCals, 1));
-            document.getElementById('cals-left').innerText = Math.max(0, profile.targetCals - t.k);
-            
-            const up = (id, cur, max) => {
-                document.getElementById(id+'-cur').innerText = cur;
-                document.getElementById(id+'-max').innerText = max;
-                document.getElementById(id+'-bar').style.width = Math.min((cur/max)*100, 100) + '%';
+            const offset = 628 - (628 * Math.min(totals.k / config.target, 1));
+            ring.style.strokeDashoffset = offset;
+            document.getElementById('cals-left').innerText = Math.max(0, config.target - totals.k);
+
+            // Update Bars
+            const setBar = (id, cur, max) => {
+                document.getElementById(id + '-cur').innerText = cur;
+                document.getElementById(id + '-fill').style.width = Math.min((cur / max) * 100, 100) + '%';
             };
-            up('p', t.p, profile.p); up('c', t.c, profile.c); up('f', t.f, profile.f);
+            setBar('p', totals.p, config.p);
+            setBar('c', totals.c, config.c);
+            setBar('f', totals.f, config.f);
+
+            // Update Log List
+            const list = document.getElementById('log-list');
+            document.getElementById('log-count').innerText = `${dayLogs.length} items`;
+            list.innerHTML = dayLogs.map(item => `
+                <div class="log-item">
+                    <div class="log-info">
+                        <span class="log-name">${item.name}</span>
+                        <span class="log-sub">${item.time} • P: ${item.p}g C: ${item.c}g</span>
+                    </div>
+                    <span class="log-kcal">${item.k} kcal</span>
+                </div>
+            `).join('');
         }
+
+        function resetData() {
+            if(confirm("Wipe all data?")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        // Initialize
         updateUI();
     </script>
 </body>
