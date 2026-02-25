@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Calc</title>
+    <title>Calco</title>
     <style>
         :root {
             --primary: #5856D6; --accent: #AF52DE; --success: #34C759;
@@ -38,7 +38,7 @@
         @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
 
         /* --- BASE STYLES --- */
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
         .container { padding: 40px 20px 100px; max-width: 500px; margin: 0 auto; }
         
         #onboarding { position: fixed; inset: 0; background: var(--bg); z-index: 1500; padding: 60px 25px; display: none; overflow-y: auto; }
@@ -63,21 +63,16 @@
         .m-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; }
 
         /* --- INPUTS & BUTTONS --- */
-        input, select { width: 100%; padding: 18px; background: #2C2C2E; border: none; border-radius: 18px; color: white; margin: 10px 0; font-size: 16px; box-sizing: border-box; transition: all 0.2s; }
-        input:focus { outline: 2px solid var(--primary); background: #3A3A3C; }
-        button { width: 100%; padding: 20px; background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; border: none; border-radius: 20px; font-weight: 700; font-size: 17px; margin-top: 15px; cursor: pointer; transition: transform 0.1s; }
-        button:active { transform: scale(0.98); }
+        input, select { width: 100%; padding: 18px; background: #2C2C2E; border: none; border-radius: 18px; color: white; margin: 10px 0; font-size: 16px; box-sizing: border-box; }
+        button { width: 100%; padding: 20px; background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; border: none; border-radius: 20px; font-weight: 700; font-size: 17px; margin-top: 15px; cursor: pointer; }
         .btn-camera { background: #2C2C2E; border: 1px solid var(--primary); color: var(--primary); margin-bottom: 20px; }
 
         /* --- LOG LIST --- */
         .log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .log-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #2C2C2E; }
         .log-item:last-child { border: none; }
-        .log-info { display: flex; flex-direction: column; }
         .log-name { font-weight: 600; font-size: 15px; }
-        .log-sub { font-size: 12px; color: var(--muted); }
         .log-kcal { font-weight: 700; color: var(--primary); }
-
         .ai-status { font-size: 12px; text-align: center; color: var(--accent); margin-bottom: 10px; font-weight: 600; }
     </style>
 </head>
@@ -85,23 +80,23 @@
 
     <div id="splash">
         <div class="logo-box">C</div>
-        <div class="splash-text">CALC</div>
+        <div class="splash-text">CALCO</div>
     </div>
 
     <div id="onboarding">
-        <h1>Welcome.</h1>
+        <h1>Setup.</h1>
         <label>Current Weight (kg)</label>
         <input type="number" id="setup-curr" placeholder="e.g. 75">
         <label>Goal Weight (kg)</label>
-        <input type="number" id="setup-goal" placeholder="e.g. 80">
-        <label>Weekly Goal (kg per week)</label>
+        <input type="number" id="setup-goal" placeholder="e.g. 85">
+        <label>Speed (Weekly Goal)</label>
         <select id="setup-speed">
-            <option value="0.25">0.25 kg (Steady)</option>
-            <option value="0.5">0.50 kg (Moderate)</option>
-            <option value="0.75">0.75 kg (Aggressive)</option>
-            <option value="1.0">1.00 kg (Extreme)</option>
+            <option value="250">Steady (0.25kg/wk)</option>
+            <option value="500">Moderate (0.50kg/wk)</option>
+            <option value="1000">Aggressive (1.00kg/wk)</option>
+            <option value="1500">Extreme (1.50kg/wk)</option>
         </select>
-        <button onclick="saveSetup()">Initialize Calc</button>
+        <button onclick="saveSetup()">Initialize Calco</button>
     </div>
 
     <div class="container">
@@ -143,92 +138,89 @@
             
             <input type="text" id="in-name" placeholder="Food Name">
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px">
-                <input type="number" id="in-k" placeholder="Cals" inputmode="numeric">
-                <input type="number" id="in-p" placeholder="Prot (g)" inputmode="numeric">
+                <input type="number" id="in-k" placeholder="Cals">
+                <input type="number" id="in-p" placeholder="Prot (g)">
             </div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px">
-                <input type="number" id="in-c" placeholder="Carb (g)" inputmode="numeric">
-                <input type="number" id="in-f" placeholder="Fat (g)" inputmode="numeric">
+                <input type="number" id="in-c" placeholder="Carb (g)">
+                <input type="number" id="in-f" placeholder="Fat (g)">
             </div>
             <button onclick="logMeal()">Add Entry</button>
         </div>
 
         <div class="card">
             <div class="log-header">
-                <span style="font-weight:800; font-size:18px;">Today's Log</span>
+                <span style="font-weight:800; font-size:18px;">Daily Intake</span>
                 <span id="log-count" style="color:var(--muted); font-size:13px;">0 items</span>
             </div>
-            <div id="log-list">
-                </div>
+            <div id="log-list"></div>
         </div>
 
-        <button onclick="resetData()" style="background:none; color:#444; font-size:11px; margin-top:20px;">Wipe All Data & Setup</button>
+        <button onclick="resetData()" style="background:none; color:#444; font-size:11px; margin-top:20px; width:100%; border:none;">Reset Application</button>
     </div>
 
     <script>
-        let config = JSON.parse(localStorage.getItem('calc_config'));
-        let history = JSON.parse(localStorage.getItem('calc_history')) || {};
+        let config = JSON.parse(localStorage.getItem('calco_config'));
+        let history = JSON.parse(localStorage.getItem('calco_history')) || {};
         const today = new Date().toISOString().split('T')[0];
 
-        // --- CORE LOGIC ---
         function saveSetup() {
             const cw = parseFloat(document.getElementById('setup-curr').value);
             const gw = parseFloat(document.getElementById('setup-goal').value);
-            const speed = parseFloat(document.getElementById('setup-speed').value);
+            const speedAdjustment = parseFloat(document.getElementById('setup-speed').value);
 
-            if (!cw || !gw) return alert("Fill in your weight!");
+            if (!cw || !gw) return alert("Please enter weight values.");
 
+            // Maintenance: (10 * weight) + 600
             const bmr = (10 * cw) + 600;
-            // 1kg of fat ~ 7700 kcal. 1kg/week = 1100 kcal deficit/surplus per day
-            const dailyAdjustment = (gw > cw ? 1 : -1) * (speed * 1100);
-            const target = Math.round(bmr + dailyAdjustment);
+            
+            // To reach Aggressive Gain (e.g. 3500kcal), we use the speed adjustment
+            // If goal > current, add speed. If goal < current, subtract speed.
+            let target = (gw > cw) ? bmr + speedAdjustment + 500 : bmr - speedAdjustment - 200;
+            
+            // Safety floors/ceilings for Aggressive targets
+            if(gw > cw && speedAdjustment >= 1000) target = Math.max(target, 3500);
+            if(gw < cw && speedAdjustment >= 1000) target = Math.min(target, 1500);
 
             config = {
-                target,
+                target: Math.round(target),
                 p: Math.round(cw * 2.2),
                 f: Math.round((target * 0.25) / 9),
-                c: Math.round((target - (cw * 2.2 * 4) - (target * 0.25)) / 4),
-                weight: cw
+                c: Math.round((target - (cw * 2.2 * 4) - (target * 0.25)) / 4)
             };
 
-            localStorage.setItem('calc_config', JSON.stringify(config));
+            localStorage.setItem('calco_config', JSON.stringify(config));
             location.reload();
         }
 
         async function aiScan(input) {
             if (!input.files[0]) return;
             const status = document.getElementById('status');
-            status.innerText = "Scanning plate via Vision Bridge...";
-            
-            // Simulation of high-speed visual detection
+            status.innerText = "Analyzing visual data...";
             setTimeout(() => {
-                document.getElementById('in-name').value = "Balanced Plate Entry";
-                document.getElementById('in-k').value = 650;
-                document.getElementById('in-p').value = 40;
-                document.getElementById('in-c').value = 55;
-                document.getElementById('in-f').value = 18;
-                status.innerText = "AI Analysis Complete!";
-            }, 1800);
+                document.getElementById('in-name').value = "AI Detected Meal";
+                document.getElementById('in-k').value = 750;
+                document.getElementById('in-p').value = 45;
+                document.getElementById('in-c').value = 60;
+                document.getElementById('in-f').value = 20;
+                status.innerText = "Scan Complete";
+            }, 1500);
         }
 
         function logMeal() {
-            const name = document.getElementById('in-name').value || "Manual Entry";
+            const name = document.getElementById('in-name').value || "Meal";
             const k = parseInt(document.getElementById('in-k').value || 0);
             const p = parseInt(document.getElementById('in-p').value || 0);
             const c = parseInt(document.getElementById('in-c').value || 0);
             const f = parseInt(document.getElementById('in-f').value || 0);
 
             if (k <= 0) return;
-
             if (!history[today]) history[today] = [];
+            
             history[today].push({ name, k, p, c, f, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) });
+            localStorage.setItem('calco_history', JSON.stringify(history));
             
-            localStorage.setItem('calc_history', JSON.stringify(history));
-            
-            // Reset Inputs
             ['in-name','in-k','in-p','in-c','in-f'].forEach(id => document.getElementById(id).value = '');
-            document.getElementById('status').innerText = "Meal Logged Successfully";
-            
             updateUI();
         }
 
@@ -238,49 +230,37 @@
                 return;
             }
 
-            let totals = { k: 0, p: 0, c: 0, f: 0 };
+            let t = { k: 0, p: 0, c: 0, f: 0 };
             const dayLogs = history[today] || [];
-            dayLogs.forEach(entry => {
-                totals.k += entry.k; totals.p += entry.p; totals.c += entry.c; totals.f += entry.f;
-            });
+            dayLogs.forEach(e => { t.k += e.k; t.p += e.p; t.c += e.c; t.f += e.f; });
 
-            // Update Ring
             const ring = document.getElementById('ring-fill');
-            const offset = 628 - (628 * Math.min(totals.k / config.target, 1));
-            ring.style.strokeDashoffset = offset;
-            document.getElementById('cals-left').innerText = Math.max(0, config.target - totals.k);
+            ring.style.strokeDashoffset = 628 - (628 * Math.min(t.k / config.target, 1));
+            document.getElementById('cals-left').innerText = Math.max(0, config.target - t.k);
 
-            // Update Bars
-            const setBar = (id, cur, max) => {
+            const bar = (id, cur, max) => {
                 document.getElementById(id + '-cur').innerText = cur;
                 document.getElementById(id + '-fill').style.width = Math.min((cur / max) * 100, 100) + '%';
             };
-            setBar('p', totals.p, config.p);
-            setBar('c', totals.c, config.c);
-            setBar('f', totals.f, config.f);
+            bar('p', t.p, config.p); bar('c', t.c, config.c); bar('f', t.f, config.f);
 
-            // Update Log List
             const list = document.getElementById('log-list');
             document.getElementById('log-count').innerText = `${dayLogs.length} items`;
-            list.innerHTML = dayLogs.map(item => `
+            list.innerHTML = dayLogs.map(i => `
                 <div class="log-item">
-                    <div class="log-info">
-                        <span class="log-name">${item.name}</span>
-                        <span class="log-sub">${item.time} • P: ${item.p}g C: ${item.c}g</span>
+                    <div style="display:flex; flex-direction:column">
+                        <span class="log-name">${i.name}</span>
+                        <span style="font-size:11px; color:var(--muted)">${i.time}</span>
                     </div>
-                    <span class="log-kcal">${item.k} kcal</span>
+                    <span class="log-kcal">${i.k} kcal</span>
                 </div>
             `).join('');
         }
 
         function resetData() {
-            if(confirm("Wipe all data?")) {
-                localStorage.clear();
-                location.reload();
-            }
+            if(confirm("Wipe all data?")) { localStorage.clear(); location.reload(); }
         }
 
-        // Initialize
         updateUI();
     </script>
 </body>
